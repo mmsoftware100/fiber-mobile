@@ -1,22 +1,22 @@
 import 'dart:convert';
 
-import 'package:fiber_oms_flutter/model/all_service_schedule_model.dart';
+import 'package:fiber_oms_flutter/model/all_ticket_ckeck_model.dart';
 import 'package:fiber_oms_flutter/utils/dialogue.dart';
 import 'package:fiber_oms_flutter/utils/rest_api.dart';
-import 'package:fiber_oms_flutter/view/pages/service/edit_service_schedule_page.dart';
-import 'package:fiber_oms_flutter/view/pages/service/new_service_schedule_add_page.dart';
+import 'package:fiber_oms_flutter/view/pages/tickest/edit_ticket_check_page.dart';
+import 'package:fiber_oms_flutter/view/pages/tickest/new_ticket_check_add_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-class ServicesSchedulePage extends StatefulWidget {
-  const ServicesSchedulePage({Key? key}) : super(key: key);
+class TickestCheckListPage extends StatefulWidget {
+  const TickestCheckListPage({Key? key}) : super(key: key);
 
   @override
-  _ServicesSchedulePageState createState() => _ServicesSchedulePageState();
+  _TickestCheckListPageState createState() => _TickestCheckListPageState();
 }
 
-class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
+class _TickestCheckListPageState extends State<TickestCheckListPage> {
 
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
@@ -26,15 +26,15 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
   late int lastPage;
   bool dataReturnStatus = false;
 
-  List<AllServiceScheduleModel> allServiceScheduleList = [];
+  List<AllTicketCheckModel> allTicketCheckList = [];
   bool getResult = false;
 
-  getServiceScheduleList()async{
+  getTicketCheckList()async{
     try{
-      await APIServices.Get_All_Service_Schedule().then((value){
+      await APIServices.Get_All_TicketCheck().then((value){
         Map<String, dynamic> dataResponse = jsonDecode(value);
 
-        print("getServiceScheduleList data is "+dataResponse.toString());
+        print("getTicketCheckList data is "+dataResponse.toString());
 
         setState(() {
           lastPage = dataResponse['data']['last_page'];
@@ -45,16 +45,16 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
 
         List<dynamic> dataList =  dataResponse['data']['data'];
 
-        print("getServiceScheduleList of aung is "+dataList.toString());
+        print("getTicketCheckList of aung is "+dataList.toString());
 
         setState(() {
           getResult = true;
-          allServiceScheduleList.clear();
+          allTicketCheckList.clear();
           for(int i=0; i<dataList.length; i++){
             try{
-              allServiceScheduleList.add(AllServiceScheduleModel.fromJson(dataList[i]));
+              allTicketCheckList.add(AllTicketCheckModel.fromJson(dataList[i]));
               print("hello "+i.toString());
-              print(allServiceScheduleList);
+              print(allTicketCheckList);
             }
             catch(exp){
               print("intername exp");
@@ -69,24 +69,24 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
     }
   }
 
-  getNextPageServiceSchedule()async{
+  getNextPageTicketCheck()async{
 
     try{
-      await APIServices.Get_Next_Service_Schedule_Page(currentPage.toString()).then((value){
+      await APIServices.Get_Next_Ticket_Check_Page(currentPage.toString()).then((value){
         Map<String, dynamic> dataResponse = jsonDecode(value);
 
-        print("getNextPageServiceSchedule data is "+dataResponse.toString());
+        print("getNextPageTicketCheck data is "+dataResponse.toString());
 
         List<dynamic> dataList =  dataResponse['data']['data'];
 
-        print("getNextPageServiceSchedule of aung is "+dataList.toString());
+        print("getNextPageTicketCheck of aung is "+dataList.toString());
         setState(() {
           dataReturnStatus = true;
           for(int i=0; i<dataList.length; i++){
             try{
-              allServiceScheduleList.add(AllServiceScheduleModel.fromJson(dataList[i]));
+              allTicketCheckList.add(AllTicketCheckModel.fromJson(dataList[i]));
               print("hello "+i.toString());
-              print(allServiceScheduleList);
+              print(allTicketCheckList);
             }
             catch(exp){
               print("intername exp");
@@ -111,7 +111,7 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
       //allParcelModelList.clear();
       currentPage = 1;
     });
-    await getServiceScheduleList();
+    await getTicketCheckList();
     // if failed,use refreshFailed()
     _refreshController.refreshCompleted();
   }
@@ -122,7 +122,7 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
       setState(() {
         currentPage ++;
       });
-      await getNextPageServiceSchedule();
+      await getNextPageTicketCheck();
     }
 
 
@@ -137,11 +137,11 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
     _refreshController.loadComplete();
   }
 
-  _deleteTicketCheck(String id)async{
+  _deleteTicket(String id)async{
 
     Dialogs.showLoadingDialog(context, _keyLoader);//invoking login
 
-    await APIServices.Delete_TicketCheck(id).then((value) {
+    await APIServices.Delete_Ticket(id).then((value) {
       print("value is "+value);
       Navigator.of(context,rootNavigator: true).pop();//close the dialoge
       Map<String, dynamic> dataResponse = jsonDecode(value);
@@ -183,7 +183,7 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
                 child: new Text("Yes"),
                 onPressed: () {
                   Navigator.of(context).pop();
-                  _deleteTicketCheck(id);
+                  _deleteTicket(id);
                 },
               ),
             )
@@ -247,7 +247,7 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getServiceScheduleList();
+    getTicketCheckList();
   }
 
   @override
@@ -255,7 +255,7 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey,
-        title: Text("Services Schedule"),
+        title: Text("Ticket Check List"),
       ),
         body: SmartRefresher(
             enablePullDown: true,
@@ -290,11 +290,11 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
             onLoading: _onLoading,
             child:getResult == false ? Center(
               child: CircularProgressIndicator(),
-            ): getResult == true && allServiceScheduleList.length == 0 ? Center(
+            ): getResult == true && allTicketCheckList.length == 0 ? Center(
               child: Text("No Data "),
             ):
             ListView(
-              children: allServiceScheduleList.map((e) {
+              children: allTicketCheckList.map((e) {
                 return Card(
                   child: ListTile(
                     title: Padding(
@@ -321,13 +321,14 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
                               ]
                           ),
 
+
                         ],
                       ),
                     ),
                     // trailing: IconButton(
                     //   icon: Icon(Icons.edit),
                     //   onPressed: () {
-                    //     Navigator.push(context, MaterialPageRoute(builder: (context)=>EditServiceSchedulePage(e.id)));
+                    //     Navigator.push(context, MaterialPageRoute(builder: (context)=>EditTicketCheckPage(e.id)));
                     //   },
                     // ),
                     trailing: PopupMenuButton(
@@ -339,7 +340,7 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
                                 IconButton(
                                   icon: Icon(Icons.edit,color: Colors.blue,),
                                   onPressed: () {
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=>EditServiceSchedulePage(e.id)));
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=>EditTicketCheckPage(e.id)));
                                   },
                                 ),
                               ],
@@ -364,7 +365,7 @@ class _ServicesSchedulePageState extends State<ServicesSchedulePage> {
                     ),
 
                     onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>NewSericeScheduleAddPage(e.id)));
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>NewTicketCheckAddPage(e.id)));
                     },
                   ),
                 );

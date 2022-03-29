@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:fiber_oms_flutter/model/one_ticket_check_model.dart';
+import 'package:fiber_oms_flutter/model/one_installation_schedule_model.dart';
+import 'package:fiber_oms_flutter/model/one_virtual_survey_model.dart';
 import 'package:fiber_oms_flutter/model/team_model.dart';
 import 'package:fiber_oms_flutter/utils/dialogue.dart';
 import 'package:fiber_oms_flutter/utils/rest_api.dart';
@@ -8,46 +9,52 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
-class NewSericeScheduleAddPage extends StatefulWidget {
+class EditInstallationPage extends StatefulWidget {
   String id;
-  NewSericeScheduleAddPage(this.id);
+  EditInstallationPage(this.id);
 
   @override
-  _NewSericeScheduleAddPageState createState() => _NewSericeScheduleAddPageState();
+  _EditInstallationPageState createState() => _EditInstallationPageState();
 }
 
-class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
+class _EditInstallationPageState extends State<EditInstallationPage> {
+
 
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
-  late OneTicketCheckModel oneTicketCheckModel ;
+  late OneInstallationScheduleModel oneInstallationModel ;
   bool dataReturnStatus = false;
 
-  String _startDate = "Not set";
-  String _endDate = "Not set";
-  TextEditingController _txtRemarkController = TextEditingController();
-
-  List<TeamModel> teamtListModel = [];
+  List<TeamModel> teamListModel = [];
   String _selectedTeamID = '';
   List<String> _teamIDArrayList = [];
 
-  getOneServiceSchedule()async{
+  TextEditingController _txtRemarkController = TextEditingController();
+
+  String _startDate = "Not set";
+  String _endDate = "Not set";
+
+  getOneInstallation()async{
     //Dialogs.showLoadingDialog(context, _keyLoader);//invoking login
     print("id is "+widget.id);
     try{
-      await APIServices.Get_One_Service_Schedule(widget.id).then((value){
+      await APIServices.Get_One_Installation(widget.id).then((value){
 
 
         //Navigator.of(context,rootNavigator: true).pop();//close the dialoge
 
         Map<String, dynamic> dataResponse = jsonDecode(value);
 
-        print("getOneServiceSchedule data is "+dataResponse.toString());
+        print("getOneInstallation data is "+dataResponse.toString());
         setState(() {
-          print("Ok here");
           dataReturnStatus = true;
-          oneTicketCheckModel = OneTicketCheckModel.fromJson(dataResponse['data']);
-          print("hello "+oneTicketCheckModel.toString());
+          oneInstallationModel = OneInstallationScheduleModel.fromJson(json.decode(value)['data']);
+          print("hello "+oneInstallationModel.toString());
+
+          _selectedTeamID= oneInstallationModel.teamId;
+          _startDate = oneInstallationModel.startDate;
+          _endDate = oneInstallationModel.endDate;
+          _txtRemarkController.text = oneInstallationModel.remark;
         });
 
       });
@@ -67,28 +74,28 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
 
         Map<String, dynamic> dataResponse = jsonDecode(value);
 
-        print("Get_Teams data is "+dataResponse.toString());
+        print("getTeam data is "+dataResponse.toString());
 
         List<dynamic> dataList =  dataResponse['data'];
 
-        print("Get_Teams of aung is "+dataList.toString());
+        print("getTeam of aung is "+dataList.toString());
 
         print("Hi data "+dataList.length.toString());
         setState(() {
           for(int i=0; i<dataList.length; i++){
             try{
-              teamtListModel.add(TeamModel.fromJson(dataList[i]));
+              teamListModel.add(TeamModel.fromJson(dataList[i]));
               print("hello "+i.toString());
-              print(teamtListModel);
+              print(teamListModel);
             }
             catch(exp){
               print("intername exp");
             }
           }
 
-          if(teamtListModel.length > 0){
+          if(teamListModel.length > 0){
             setState(() {
-              teamtListModel.forEach((value){
+              teamListModel.forEach((value){
                 print("value.teamCode is "+value.id);
                 _teamIDArrayList.add(value.id);
               });
@@ -97,11 +104,11 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
           }
         });
 
-        print("teamtListModel is "+teamtListModel.toString());
+        print("teamListModel is "+teamListModel.toString());
 
-        return teamtListModel;
+        return teamListModel;
       });
-      return teamtListModel ;
+      return teamListModel ;
     }
     catch (Exc) {
       print(Exc);
@@ -145,22 +152,22 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
         }, currentTime: DateTime.now(), locale: LocaleType.en);
   }
 
-  CreateServiceSchedule()async{
+  EditInstallation()async{
 
     Dialogs.showLoadingDialog(context, _keyLoader);//invoking login
 
     Map mydata ={
-      'ticketcheck_id': widget.id,
+      'id': widget.id,
+      'remark': _txtRemarkController.text,
       'team_id': _selectedTeamID,
       'start_date': _startDate,
-      'end_date': _endDate,
-      'remark': _txtRemarkController.text
+      'end_date': _endDate
     };
 
     print(mydata);
 
     try{
-      await APIServices.Create_Service_Schedule(mydata).then((response){
+      await APIServices.Edit_Installation(mydata).then((response){
         Navigator.of(context,rootNavigator: true).pop();//close the dialoge
         Map<String, dynamic> dataResponse = jsonDecode(response);
         //List<dynamic> dataList =  dataResponse['data'];
@@ -246,116 +253,83 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getOneServiceSchedule();
-    getTeam();
-  }
 
+    getOneInstallation();
+    getTeam();
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey,
-        title: Text("New Service Schedule"),
+        title: Text("Edit Installation Schedulel"),
       ),
       body: dataReturnStatus == false ? Center(
         child: CircularProgressIndicator(),
-      ):ListView(
+      ): ListView(
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  //color: Colors.blueAccent
+            child: Table(
+              children: [
+                TableRow(
+                    children: [
+                      Column(
+                        children: [
+                          Text("ID"),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text(oneInstallationModel.id),
+                        ],
+                      )
+                    ]
                 ),
-                borderRadius: BorderRadius.all(
-                    Radius.circular(5.0)), // Set rounded corner radius
-              ),
-              child: ListView(
-                shrinkWrap: true,
-                physics: ScrollPhysics(),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Text("Ticket Detail"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Table(
-                      children: [
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Order Code"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.ticket.order.code),
-                                ],
-                              )
-                            ]
-                        ),
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Package Type"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.ticket.order.package.packagetype.name),
-                                ],
-                              )
-                            ]
-                        ),
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Issue"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.ticket.issue.name),
-                                ],
-                              )
-                            ]
-                        ),
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Remark"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.ticket.remark),
-                                ],
-                              )
-                            ]
-                        ),
-
-                      ],
-                    ),
-                  )
-                ],
-              ),
-
+                TableRow(
+                    children: [
+                      Column(
+                        children: [
+                          Text("code"),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text(oneInstallationModel.virtualsurvey.order.code),
+                        ],
+                      )
+                    ]
+                ),
+                TableRow(
+                    children: [
+                      Column(
+                        children: [
+                          Text("Customer Name"),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text(oneInstallationModel.virtualsurvey.order.customer.name),
+                        ],
+                      )
+                    ]
+                ),
+                TableRow(
+                    children: [
+                      Column(
+                        children: [
+                          Text("Remark"),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text(oneInstallationModel.remark),
+                        ],
+                      )
+                    ]
+                )
+              ],
             ),
           ),
           Padding(
@@ -375,88 +349,7 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
-                      child: Text("Ticket Check Detail"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Table(
-                      children: [
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Order Code"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.ticket.order.code),
-                                ],
-                              )
-                            ]
-                        ),
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Checking Result"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.checkresult.name),
-                                ],
-                              )
-                            ]
-                        ),
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Remark"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.remark),
-                                ],
-                              )
-                            ]
-                        ),
-
-                      ],
-                    ),
-                  )
-                ],
-              ),
-
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  //color: Colors.blueAccent
-                ),
-                borderRadius: BorderRadius.all(
-                    Radius.circular(5.0)), // Set rounded corner radius
-              ),
-              child: ListView(
-                shrinkWrap: true,
-                physics: ScrollPhysics(),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Text("Service Schedule Detail"),
+                      child: Text("Installation Schedule Detail"),
                     ),
                   ),
                   Padding(
@@ -480,7 +373,7 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             isExpanded: true,
-                            items: teamtListModel.map((value) {
+                            items: teamListModel.map((value) {
                               return DropdownMenuItem<String>(
                                 value: value.id.toString(),
                                 child: Text(value.name),
@@ -494,6 +387,11 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                       ),
                     ),
                   ),
+
+                  SizedBox(
+                    height: 20,
+                  ),
+
                   RaisedButton(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5.0)),
@@ -597,30 +495,30 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtRemarkController,
+                        controller: _txtRemarkController,
                         decoration: InputDecoration(
                           labelText: "Remark",
                           border: OutlineInputBorder(),
                         )
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: MaterialButton(
-                        height: 58,
-                        minWidth: 340,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: new BorderRadius.circular(12)),
-                        color: Colors.blue,
-                        child: Text("Save",style: TextStyle(color: Colors.white),),
-                        onPressed: (){
-                          CreateServiceSchedule();
-                        }),
-                  ),
-
                 ],
               ),
             ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: MaterialButton(
+                height: 58,
+                minWidth: 340,
+                shape: RoundedRectangleBorder(
+                    borderRadius: new BorderRadius.circular(12)),
+                color: Color(0xFFF7CA18),
+                child: Text("Save"),
+                onPressed: (){
+                  EditInstallation();
+                }),
           ),
         ],
       ),

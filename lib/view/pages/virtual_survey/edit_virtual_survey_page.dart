@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fiber_oms_flutter/model/one_order_model.dart';
 import 'package:fiber_oms_flutter/model/package_model.dart';
 import 'package:fiber_oms_flutter/model/package_type_model.dart';
 import 'package:fiber_oms_flutter/model/payment_model.dart';
@@ -13,36 +14,40 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-class NewOrderInsertPage extends StatefulWidget {
-  const NewOrderInsertPage({Key? key}) : super(key: key);
+class EditVirtualSurveyPage extends StatefulWidget {
+  String id;
+  EditVirtualSurveyPage(this.id);
 
   @override
-  _NewOrderInsertPageState createState() => _NewOrderInsertPageState();
+  _EditVirtualSurveyPageState createState() => _EditVirtualSurveyPageState();
 }
 
-class _NewOrderInsertPageState extends State<NewOrderInsertPage>{
+class _EditVirtualSurveyPageState extends State<EditVirtualSurveyPage> {
 
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
+  File? _imageNRCfrontphoto,_imageNRCBackphoto,_imageContractphoto,_imageTranscationphoto;
+  final picker = ImagePicker();
+  late OneOrderModel oneOrderModel ;
+  bool dataReturnStatus = false;
 
-File? _imageNRCfrontphoto,_imageNRCBackphoto,_imageContractphoto,_imageTranscationphoto;
-final picker = ImagePicker();
+  String customeraddress_id = "";
 
-TextEditingController _txtNameController = TextEditingController();
-TextEditingController _txtNRCController = TextEditingController();
-TextEditingController _txtEmailController = TextEditingController();
-TextEditingController _txtContactController = TextEditingController();
-TextEditingController _txtAlternateContactController = TextEditingController();
+  TextEditingController _txtNameController = TextEditingController();
+  TextEditingController _txtNRCController = TextEditingController();
+  TextEditingController _txtEmailController = TextEditingController();
+  TextEditingController _txtContactController = TextEditingController();
+  TextEditingController _txtAlternateContactController = TextEditingController();
 
-TextEditingController _txtWardController = TextEditingController();
-TextEditingController _txtStreetController = TextEditingController();
-TextEditingController _txtHomeController = TextEditingController();
-TextEditingController _txtFloorController = TextEditingController();
-TextEditingController _txtRoomController = TextEditingController();
-TextEditingController _txtLatController = TextEditingController();
-TextEditingController _txtLngController = TextEditingController();
+  TextEditingController _txtWardController = TextEditingController();
+  TextEditingController _txtStreetController = TextEditingController();
+  TextEditingController _txtHomeController = TextEditingController();
+  TextEditingController _txtFloorController = TextEditingController();
+  TextEditingController _txtRoomController = TextEditingController();
+  TextEditingController _txtLatController = TextEditingController();
+  TextEditingController _txtLngController = TextEditingController();
 
-TextEditingController _txtRemarkController = TextEditingController();
+  TextEditingController _txtRemarkController = TextEditingController();
 
 
 
@@ -427,373 +432,445 @@ TextEditingController _txtRemarkController = TextEditingController();
     });
   }
 
-void _chooseNRCfrontphotoDialog() {
-  // flutter defined function
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return CupertinoAlertDialog(
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child:
-            new FlatButton(
-              child: new Text("Take Camera"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                getNRCfrontphotoFromCamera();
-              },
+  void _chooseNRCfrontphotoDialog() {
+    // flutter defined function
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child:
+              new FlatButton(
+                child: new Text("Take Camera"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  getNRCfrontphotoFromCamera();
+                },
+              ),
             ),
-          ),
-          CupertinoDialogAction(
-            child:
-            new FlatButton(
-              child: new Text("Choose from gallery"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                getNRCfrontphotoFromGallery();
-              },
-            ),
-          )
-        ],
-      );
-    },
-  );
-}
+            CupertinoDialogAction(
+              child:
+              new FlatButton(
+                child: new Text("Choose from gallery"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  getNRCfrontphotoFromGallery();
+                },
+              ),
+            )
+          ],
+        );
+      },
+    );
+  }
 
-Future getNRCfrontphotoFromCamera() async {
-  final pickedFile = await picker.getImage(source: ImageSource.camera,imageQuality: 25,);
+  Future getNRCfrontphotoFromCamera() async {
+    final pickedFile = await picker.getImage(source: ImageSource.camera,imageQuality: 25,);
 
-  setState(() {
-    if (pickedFile != null) {
-      _imageNRCfrontphoto = File(pickedFile.path);
-    } else {
-      print('No image selected.');
-    }
-  });
-}
-
-Future getNRCfrontphotoFromGallery() async {
-  final pickedFile = await picker.getImage(source: ImageSource.gallery,imageQuality: 25,);
-
-  setState(() {
-    //_image = image;
-    if (pickedFile != null) {
-      _imageNRCfrontphoto = File(pickedFile.path);
-    } else {
-      print('No image selected.');
-    }
-  });
-}
-
-void _chooseNRCBackphotoDialog() {
-  // flutter defined function
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return CupertinoAlertDialog(
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child:
-            new FlatButton(
-              child: new Text("Take Camera"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                getNRCBackphotoFromCamera();
-              },
-            ),
-          ),
-          CupertinoDialogAction(
-            child:
-            new FlatButton(
-              child: new Text("Choose from gallery"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                getNRCBackphotoFromGallery();
-              },
-            ),
-          )
-        ],
-      );
-    },
-  );
-}
-
-Future getNRCBackphotoFromCamera() async {
-  final pickedFile = await picker.getImage(source: ImageSource.camera,imageQuality: 25,);
-
-  setState(() {
-    if (pickedFile != null) {
-      _imageNRCBackphoto = File(pickedFile.path);
-    } else {
-      print('No image selected.');
-    }
-  });
-}
-
-Future getNRCBackphotoFromGallery() async {
-  final pickedFile = await picker.getImage(source: ImageSource.gallery,imageQuality: 25,);
-
-  setState(() {
-    //_image = image;
-    if (pickedFile != null) {
-      _imageNRCBackphoto = File(pickedFile.path);
-    } else {
-      print('No image selected.');
-    }
-  });
-}
-
-void _chooseContractphotoDialog() {
-  // flutter defined function
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return CupertinoAlertDialog(
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child:
-            new FlatButton(
-              child: new Text("Take Camera"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                getContractphotoFromCamera();
-              },
-            ),
-          ),
-          CupertinoDialogAction(
-            child:
-            new FlatButton(
-              child: new Text("Choose from gallery"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                getContractphotoFromGallery();
-              },
-            ),
-          )
-        ],
-      );
-    },
-  );
-}
-
-Future getContractphotoFromCamera() async {
-  final pickedFile = await picker.getImage(source: ImageSource.camera,imageQuality: 25,);
-
-  setState(() {
-    if (pickedFile != null) {
-      _imageContractphoto = File(pickedFile.path);
-    } else {
-      print('No image selected.');
-    }
-  });
-}
-
-Future getContractphotoFromGallery() async {
-  final pickedFile = await picker.getImage(source: ImageSource.gallery,imageQuality: 25,);
-
-  setState(() {
-    //_image = image;
-    if (pickedFile != null) {
-      _imageContractphoto = File(pickedFile.path);
-    } else {
-      print('No image selected.');
-    }
-  });
-}
-
-  void _chooseTranscationphotoDialog() {
-  // flutter defined function
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return CupertinoAlertDialog(
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child:
-            new FlatButton(
-              child: new Text("Take Camera"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                getTranscationphotoFromCamera();
-              },
-            ),
-          ),
-          CupertinoDialogAction(
-            child:
-            new FlatButton(
-              child: new Text("Choose from gallery"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                getTranscationphotoFromGallery();
-              },
-            ),
-          )
-        ],
-      );
-    },
-  );
-}
-
-Future getTranscationphotoFromCamera() async {
-  final pickedFile = await picker.getImage(source: ImageSource.camera,imageQuality: 25,);
-
-  setState(() {
-    if (pickedFile != null) {
-      _imageTranscationphoto = File(pickedFile.path);
-    } else {
-      print('No image selected.');
-    }
-  });
-}
-
-Future getTranscationphotoFromGallery() async {
-  final pickedFile = await picker.getImage(source: ImageSource.gallery,imageQuality: 25,);
-
-  setState(() {
-    //_image = image;
-    if (pickedFile != null) {
-      _imageTranscationphoto = File(pickedFile.path);
-    } else {
-      print('No image selected.');
-    }
-  });
-}
-
-
-insertOrder()async{
-
-  Dialogs.showLoadingDialog(context, _keyLoader);//invoking login
-
-  Map mydata ={
-    'customer_id': '',
-    'name': _txtNameController.text,
-    'nrc': _txtNRCController.text,
-    'email': _txtEmailController.text,
-    'phones[0][id]': '',
-    'phones[0][phone]': _txtContactController.text,
-    'phones[1][id]': '',
-    'phones[1][phone]': _txtAlternateContactController.text,
-    'town': _selectedTownCode,
-    'ward': _txtWardController.text,
-    'street': _txtStreetController.text,
-    'home': _txtHomeController.text,
-    'floor': _txtFloorController.text,
-    'room': _txtRoomController.text,
-    'lat': _txtLatController.text,
-    'lng': _txtLngController.text,
-    'package': _selectedPackageCode,
-    'payment': _selectedPaymentCode,
-    'plan': _selectedPlanCode,
-    'remark': _txtRemarkController.text,
-    'code': '',
-    'nrc_front_file':_imageNRCfrontphoto != null ? _imageNRCfrontphoto?.path : '',
-    'nrc_front_image_id': '',
-    'nrc_front_image': _imageNRCfrontphoto != null ? "true" : "false",
-    'nrc_back_file':_imageNRCBackphoto != null ? _imageNRCBackphoto?.path : '',
-    'nrc_back_image_id': '',
-    'nrc_back_image': _imageNRCBackphoto != null ? "true" : "false",
-    'contract_file':_imageContractphoto != null ? _imageContractphoto?.path : '',
-    'contract_image_id': '',
-    'contract_image': _imageContractphoto != null ? "true" : "false",
-    'transcation_file':_imageTranscationphoto != null ? _imageTranscationphoto?.path : '',
-    'transcation_image_id': '',
-    'transcation_image': _imageTranscationphoto != null ? "true" : "false"
-  };
-
-  print(mydata);
-
-  try{
-    await APIServices.Create_Order(mydata,_imageNRCfrontphoto,_imageNRCBackphoto,_imageContractphoto,_imageTranscationphoto).then((response){
-      Navigator.of(context,rootNavigator: true).pop();//close the dialoge
-      Map<String, dynamic> dataResponse = jsonDecode(response);
-      //List<dynamic> dataList =  dataResponse['data'];
-
-
-      print("dataResponse is "+dataResponse.toString());
-
-      if(dataResponse['status'].toString() == "true"){
-
-
-        print("hello baby");
-        Map<String, dynamic> dlist = json.decode(response);
-
-        print(dlist);
-        // NewParcelModel newParcelModel = NewParcelModel.fromJson(json.decode(response));
-        _succefllyInserted();
-
-
+    setState(() {
+      if (pickedFile != null) {
+        _imageNRCfrontphoto = File(pickedFile.path);
+      } else {
+        print('No image selected.');
       }
-      else{
-        _faildInsert();
-      }
-
     });
   }
-  catch (Exc) {
-    print(Exc);
-    rethrow;
+
+  Future getNRCfrontphotoFromGallery() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery,imageQuality: 25,);
+
+    setState(() {
+      //_image = image;
+      if (pickedFile != null) {
+        _imageNRCfrontphoto = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
   }
-}
 
-void _succefllyInserted() {
-  // flutter defined function
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return CupertinoAlertDialog(
-        content: Text("Success"),
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child:
-            new FlatButton(
-              child: new Text("OK"),
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
+  void _chooseNRCBackphotoDialog() {
+    // flutter defined function
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child:
+              new FlatButton(
+                child: new Text("Take Camera"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  getNRCBackphotoFromCamera();
+                },
+              ),
             ),
-          ),
-        ],
-      );
-    },
-  );
-}
+            CupertinoDialogAction(
+              child:
+              new FlatButton(
+                child: new Text("Choose from gallery"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  getNRCBackphotoFromGallery();
+                },
+              ),
+            )
+          ],
+        );
+      },
+    );
+  }
 
-void _faildInsert() {
-  // flutter defined function
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return CupertinoAlertDialog(
-        content: Text("Sorry"),
-        title: Text("Faild"),
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child:
-            new FlatButton(
-              child: new Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+  Future getNRCBackphotoFromCamera() async {
+    final pickedFile = await picker.getImage(source: ImageSource.camera,imageQuality: 25,);
+
+    setState(() {
+      if (pickedFile != null) {
+        _imageNRCBackphoto = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  Future getNRCBackphotoFromGallery() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery,imageQuality: 25,);
+
+    setState(() {
+      //_image = image;
+      if (pickedFile != null) {
+        _imageNRCBackphoto = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  void _chooseContractphotoDialog() {
+    // flutter defined function
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child:
+              new FlatButton(
+                child: new Text("Take Camera"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  getContractphotoFromCamera();
+                },
+              ),
             ),
-          ),
-        ],
-      );
-    },
-  );
-}
+            CupertinoDialogAction(
+              child:
+              new FlatButton(
+                child: new Text("Choose from gallery"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  getContractphotoFromGallery();
+                },
+              ),
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  Future getContractphotoFromCamera() async {
+    final pickedFile = await picker.getImage(source: ImageSource.camera,imageQuality: 25,);
+
+    setState(() {
+      if (pickedFile != null) {
+        _imageContractphoto = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  Future getContractphotoFromGallery() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery,imageQuality: 25,);
+
+    setState(() {
+      //_image = image;
+      if (pickedFile != null) {
+        _imageContractphoto = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  void _chooseTranscationphotoDialog() {
+    // flutter defined function
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child:
+              new FlatButton(
+                child: new Text("Take Camera"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  getTranscationphotoFromCamera();
+                },
+              ),
+            ),
+            CupertinoDialogAction(
+              child:
+              new FlatButton(
+                child: new Text("Choose from gallery"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  getTranscationphotoFromGallery();
+                },
+              ),
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  Future getTranscationphotoFromCamera() async {
+    final pickedFile = await picker.getImage(source: ImageSource.camera,imageQuality: 25,);
+
+    setState(() {
+      if (pickedFile != null) {
+        _imageTranscationphoto = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  Future getTranscationphotoFromGallery() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery,imageQuality: 25,);
+
+    setState(() {
+      //_image = image;
+      if (pickedFile != null) {
+        _imageTranscationphoto = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  getOneOrder()async{
+    //Dialogs.showLoadingDialog(context, _keyLoader);//invoking login
+    print("id is "+widget.id);
+    try{
+      await APIServices.Get_One_Order(widget.id).then((value){
 
 
+        //Navigator.of(context,rootNavigator: true).pop();//close the dialoge
 
-@override
+        Map<String, dynamic> dataResponse = jsonDecode(value);
+
+        print("getOneOrder data is "+dataResponse.toString());
+        setState(() {
+          dataReturnStatus = true;
+          oneOrderModel = OneOrderModel.fromJson(json.decode(value)['data']);
+          print("hello "+oneOrderModel.toString());
+
+          _txtNameController.text = oneOrderModel.customer.name;
+          _txtNRCController.text = oneOrderModel.customer.nrc;
+          _txtEmailController.text = oneOrderModel.customer.email;
+          _txtContactController.text = oneOrderModel.customer.phones[0].phone;
+          _txtAlternateContactController.text = oneOrderModel.customer.phones[1].phone;
+
+          _selectedStateDivisionID = oneOrderModel.customer.address.state.id;
+          _selectedTownCode = oneOrderModel.customer.address.town.id;
+
+          _txtWardController.text = oneOrderModel.customer.address.ward;
+          _txtStreetController.text = oneOrderModel.customer.address.street;
+          _txtHomeController.text = oneOrderModel.customer.address.home;
+          _txtFloorController.text = oneOrderModel.customer.address.floor;
+          _txtRoomController.text = oneOrderModel.customer.address.room;
+          _txtLatController.text = oneOrderModel.customer.address.lat;
+          _txtLngController.text = oneOrderModel.customer.address.lng;
+
+          _selectedPackageTypeCode = oneOrderModel.package.packagetypeId;
+          _selectedPackageCode = oneOrderModel.package.id;
+          _selectedPaymentCode = oneOrderModel.payment.id;
+          _selectedPlanCode = oneOrderModel.planId;
+
+          _txtRemarkController.text = oneOrderModel.remark;
+
+          customeraddress_id = oneOrderModel.customer.address.id;
+
+          // _imageNRCfrontphoto = File(oneOrderModel.customer.photos.nrcFront.name.toString());
+          // print("_imageNRCfrontphoto is "+_imageNRCfrontphoto.toString());
+          // _imageNRCBackphoto = File(oneOrderModel.customer.photos.nrcBack.name.toString());
+          //
+          // _imageContractphoto = File(oneOrderModel.photos.contract.name.toString());
+          // _imageTranscationphoto = File(oneOrderModel.photos.transcation.name.toString());
+        });
+
+      });
+    }
+    catch (Exc) {
+      print(Exc);
+      rethrow;
+    }
+  }
+
+  UpdateOrder()async{
+
+    Dialogs.showLoadingDialog(context, _keyLoader);//invoking login
+
+    Map mydata ={
+      'customer_id': oneOrderModel.customerId,
+      'name': _txtNameController.text.toString(),
+      'nrc': _txtNRCController.text.toString(),
+      'email':_txtEmailController.text.toString(),
+      'phones[0][id]': '',
+      'phones[0][phone]': _txtContactController.text.toString(),
+      'phones[1][id]': '',
+      'phones[1][phone]': _txtAlternateContactController.text.toString(),
+      'town': _selectedTownCode,
+      'ward': _txtWardController.text.toString(),
+      'street': _txtStreetController.text.toString(),
+      'home': _txtHomeController.text.toString(),
+      'floor': _txtFloorController.text.toString(),
+      'room': _txtRoomController.text.toString(),
+      'lat': _txtLatController.text.toString(),
+      'lng': _txtLngController.text.toString(),
+      'package': _selectedPackageCode,
+      'payment': _selectedPaymentCode,
+      'plan': _selectedPlanCode,
+      'remark': _txtRemarkController.text.toString(),
+      'code': '',
+      // 'nrc_front_file':_imageNRCfrontphoto != null ? _imageNRCfrontphoto?.path : oneOrderModel.customer.photos.nrcFront,
+      // 'nrc_front_image_id': '',
+      // 'nrc_front_image': _imageNRCfrontphoto != null ? "true" : "false",
+      // 'nrc_back_file':_imageNRCBackphoto != null ? _imageNRCBackphoto?.path : oneOrderModel.customer.photos.nrcBack,
+      // 'nrc_back_image_id': '',
+      // 'nrc_back_image': _imageNRCBackphoto != null ? "true" : "false",
+      // 'contract_file':_imageContractphoto != null ? _imageContractphoto?.path : oneOrderModel.photos.contract,
+      // 'contract_image_id': '',
+      // 'contract_image': _imageContractphoto != null ? "true" : "false",
+      // 'transcation_file':_imageTranscationphoto != null ? _imageTranscationphoto?.path : oneOrderModel.photos.transcation,
+      // 'transcation_image_id': '',
+      // 'transcation_image': _imageTranscationphoto != null ? "true" : "false",
+      'nrc_front_file':_imageNRCfrontphoto != null ? _imageNRCfrontphoto?.path : '',
+      'nrc_front_image_id': '',
+      'nrc_front_image': _imageNRCfrontphoto != null ? "true" : "false",
+      'nrc_back_file':_imageNRCBackphoto != null ? _imageNRCBackphoto?.path : '',
+      'nrc_back_image_id': '',
+      'nrc_back_image': _imageNRCBackphoto != null ? "true" : "false",
+      'contract_file':_imageContractphoto != null ? _imageContractphoto?.path : '',
+      'contract_image_id': '',
+      'contract_image': _imageContractphoto != null ? "true" : "false",
+      'transcation_file':_imageTranscationphoto != null ? _imageTranscationphoto?.path : '',
+      'transcation_image_id': '',
+      'transcation_image': _imageTranscationphoto != null ? "true" : "false",
+      'customeraddress_id': customeraddress_id,
+      '_method': 'put'
+    };
+
+    print(mydata);
+
+    try{
+      await APIServices.Edit_Order(mydata,_imageNRCfrontphoto,_imageNRCBackphoto,_imageContractphoto,_imageTranscationphoto,widget.id).then((response){
+        Navigator.of(context,rootNavigator: true).pop();//close the dialoge
+        Map<String, dynamic> dataResponse = jsonDecode(response);
+        //List<dynamic> dataList =  dataResponse['data'];
+
+
+        print("dataResponse is "+dataResponse.toString());
+
+        if(dataResponse['status'].toString() == "true"){
+
+
+          print("hello baby");
+          Map<String, dynamic> dlist = json.decode(response);
+
+          print(dlist);
+          // NewParcelModel newParcelModel = NewParcelModel.fromJson(json.decode(response));
+          _succefllyInserted();
+
+
+        }
+        else{
+          _faildInsert();
+        }
+
+      });
+    }
+    catch (Exc) {
+      print(Exc);
+      rethrow;
+    }
+  }
+
+  void _succefllyInserted() {
+    // flutter defined function
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          content: Text("Success"),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child:
+              new FlatButton(
+                child: new Text("OK"),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _faildInsert() {
+    // flutter defined function
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          content: Text("Sorry"),
+          title: Text("Faild"),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child:
+              new FlatButton(
+                child: new Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
   void initState() {
     // TODO: implement initState
+    getOneOrder();
+
     super.initState();
     getState();
     getTown();
@@ -802,13 +879,12 @@ void _faildInsert() {
     getPayments();
     getPlans();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey,
-        title: Text("New Order"),
+        title: Text("Edit Virtual Survey"),
       ),
       body: ListView(
         children: [
@@ -835,7 +911,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtNameController,
+                        controller: _txtNameController,
                         decoration: InputDecoration(
                           labelText: "Name",
                           border: OutlineInputBorder(),
@@ -845,7 +921,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtNRCController,
+                        controller: _txtNRCController,
                         decoration: InputDecoration(
                           labelText: "NRC",
                           border: OutlineInputBorder(),
@@ -855,7 +931,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtEmailController,
+                        controller: _txtEmailController,
                         decoration: InputDecoration(
                           labelText: "Email",
                           border: OutlineInputBorder(),
@@ -865,7 +941,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtContactController,
+                        controller: _txtContactController,
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
                           labelText: "Contact",
@@ -876,7 +952,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtAlternateContactController,
+                        controller: _txtAlternateContactController,
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
                           labelText: "Alternate Contact",
@@ -1030,7 +1106,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtWardController,
+                        controller: _txtWardController,
                         decoration: InputDecoration(
                           labelText: "Ward",
                           border: OutlineInputBorder(),
@@ -1040,7 +1116,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtStreetController,
+                        controller: _txtStreetController,
                         decoration: InputDecoration(
                           labelText: "Street",
                           border: OutlineInputBorder(),
@@ -1050,7 +1126,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtHomeController,
+                        controller: _txtHomeController,
                         decoration: InputDecoration(
                           labelText: "Home",
                           border: OutlineInputBorder(),
@@ -1060,7 +1136,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtFloorController,
+                        controller: _txtFloorController,
                         decoration: InputDecoration(
                           labelText: "Floor",
                           border: OutlineInputBorder(),
@@ -1070,7 +1146,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtRoomController,
+                        controller: _txtRoomController,
                         decoration: InputDecoration(
                           labelText: "Room",
                           border: OutlineInputBorder(),
@@ -1080,7 +1156,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtLatController,
+                        controller: _txtLatController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText: "Lat",
@@ -1091,7 +1167,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtLngController,
+                        controller: _txtLngController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText: "Lng",
@@ -1279,7 +1355,7 @@ void _faildInsert() {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtRemarkController,
+                        controller: _txtRemarkController,
                         decoration: InputDecoration(
                           labelText: "Remark",
                           border: OutlineInputBorder(),
@@ -1339,7 +1415,7 @@ void _faildInsert() {
                 color: Color(0xFFF7CA18),
                 child: Text("Save"),
                 onPressed: (){
-                  insertOrder();
+                  UpdateOrder();
                 }),
           ),
 

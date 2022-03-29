@@ -4,7 +4,7 @@ import 'package:fiber_oms_flutter/view/pages/order/order_list_page.dart';
 import 'package:fiber_oms_flutter/view/pages/service/new_service_add_page.dart';
 import 'package:fiber_oms_flutter/view/pages/service/service_list_page.dart';
 import 'package:fiber_oms_flutter/view/pages/service/services_schedule_page.dart';
-import 'package:fiber_oms_flutter/view/pages/tickest/tickest_check_list_page.dart';
+import 'package:fiber_oms_flutter/view/pages/tickest/ticket_check_list_page.dart';
 import 'package:fiber_oms_flutter/view/pages/tickest/tickest_list_page.dart';
 import 'package:fiber_oms_flutter/view/pages/virtual_survey/virtual_servay_list_page.dart';
 import 'package:flutter/material.dart';
@@ -128,7 +128,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: new FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>NewServiceAddpage()));
+          //Navigator.push(context, MaterialPageRoute(builder: (context)=>NewServiceAddpage()));
 
         },
         icon: new Icon(Icons.add),

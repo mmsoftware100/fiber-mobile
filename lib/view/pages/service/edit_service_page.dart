@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:fiber_oms_flutter/model/one_ticket_check_model.dart';
+import 'package:fiber_oms_flutter/model/one_service_schedule_model.dart';
 import 'package:fiber_oms_flutter/model/team_model.dart';
 import 'package:fiber_oms_flutter/utils/dialogue.dart';
 import 'package:fiber_oms_flutter/utils/rest_api.dart';
@@ -8,19 +8,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
-class NewSericeScheduleAddPage extends StatefulWidget {
+class EditServicePage extends StatefulWidget {
   String id;
-  NewSericeScheduleAddPage(this.id);
+  EditServicePage(this.id);
 
   @override
-  _NewSericeScheduleAddPageState createState() => _NewSericeScheduleAddPageState();
+  _EditServicePageState createState() => _EditServicePageState();
 }
 
-class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
+class _EditServicePageState extends State<EditServicePage> {
 
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
-  late OneTicketCheckModel oneTicketCheckModel ;
+  late OneServiceScheduleModel oneServiceModel ;
   bool dataReturnStatus = false;
 
   String _startDate = "Not set";
@@ -31,23 +31,28 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
   String _selectedTeamID = '';
   List<String> _teamIDArrayList = [];
 
-  getOneServiceSchedule()async{
+  getOneService()async{
     //Dialogs.showLoadingDialog(context, _keyLoader);//invoking login
     print("id is "+widget.id);
     try{
-      await APIServices.Get_One_Service_Schedule(widget.id).then((value){
+      await APIServices.Get_One_Service(widget.id).then((value){
 
 
         //Navigator.of(context,rootNavigator: true).pop();//close the dialoge
 
         Map<String, dynamic> dataResponse = jsonDecode(value);
 
-        print("getOneServiceSchedule data is "+dataResponse.toString());
+        print("getOneService data is "+dataResponse.toString());
         setState(() {
           print("Ok here");
           dataReturnStatus = true;
-          oneTicketCheckModel = OneTicketCheckModel.fromJson(dataResponse['data']);
-          print("hello "+oneTicketCheckModel.toString());
+          oneServiceModel = OneServiceScheduleModel.fromJson(dataResponse['data']);
+          print("hello "+oneServiceModel.toString());
+
+          _selectedTeamID = oneServiceModel.teamId;
+          _startDate = oneServiceModel.startDate;
+          _endDate = oneServiceModel.endDate;
+          _txtRemarkController.text = oneServiceModel.remark;
         });
 
       });
@@ -57,6 +62,7 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
       rethrow;
     }
   }
+
 
   Future<List<TeamModel>> getTeam() async{
     try{
@@ -145,22 +151,23 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
         }, currentTime: DateTime.now(), locale: LocaleType.en);
   }
 
-  CreateServiceSchedule()async{
+  EditService()async{
 
     Dialogs.showLoadingDialog(context, _keyLoader);//invoking login
 
     Map mydata ={
-      'ticketcheck_id': widget.id,
-      'team_id': _selectedTeamID,
-      'start_date': _startDate,
-      'end_date': _endDate,
-      'remark': _txtRemarkController.text
+
+    'id' :widget.id,
+    'team_id': _selectedTeamID,
+    'start_date': _startDate,
+    'end_date': _endDate,
+    'remark': _txtRemarkController.text
     };
 
     print(mydata);
 
     try{
-      await APIServices.Create_Service_Schedule(mydata).then((response){
+      await APIServices.Edit_Service_Schedule(mydata).then((response){
         Navigator.of(context,rootNavigator: true).pop();//close the dialoge
         Map<String, dynamic> dataResponse = jsonDecode(response);
         //List<dynamic> dataList =  dataResponse['data'];
@@ -245,200 +252,19 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
   @override
   void initState() {
     // TODO: implement initState
+    getOneService();
     super.initState();
-    getOneServiceSchedule();
     getTeam();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey,
-        title: Text("New Service Schedule"),
+        title: Text("Edit Service"),
       ),
-      body: dataReturnStatus == false ? Center(
-        child: CircularProgressIndicator(),
-      ):ListView(
+      body: ListView(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  //color: Colors.blueAccent
-                ),
-                borderRadius: BorderRadius.all(
-                    Radius.circular(5.0)), // Set rounded corner radius
-              ),
-              child: ListView(
-                shrinkWrap: true,
-                physics: ScrollPhysics(),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Text("Ticket Detail"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Table(
-                      children: [
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Order Code"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.ticket.order.code),
-                                ],
-                              )
-                            ]
-                        ),
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Package Type"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.ticket.order.package.packagetype.name),
-                                ],
-                              )
-                            ]
-                        ),
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Issue"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.ticket.issue.name),
-                                ],
-                              )
-                            ]
-                        ),
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Remark"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.ticket.remark),
-                                ],
-                              )
-                            ]
-                        ),
-
-                      ],
-                    ),
-                  )
-                ],
-              ),
-
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  //color: Colors.blueAccent
-                ),
-                borderRadius: BorderRadius.all(
-                    Radius.circular(5.0)), // Set rounded corner radius
-              ),
-              child: ListView(
-                shrinkWrap: true,
-                physics: ScrollPhysics(),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Text("Ticket Check Detail"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Table(
-                      children: [
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Order Code"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.ticket.order.code),
-                                ],
-                              )
-                            ]
-                        ),
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Checking Result"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.checkresult.name),
-                                ],
-                              )
-                            ]
-                        ),
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Remark"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.remark),
-                                ],
-                              )
-                            ]
-                        ),
-
-                      ],
-                    ),
-                  )
-                ],
-              ),
-
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
@@ -597,7 +423,7 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtRemarkController,
+                        controller: _txtRemarkController,
                         decoration: InputDecoration(
                           labelText: "Remark",
                           border: OutlineInputBorder(),
@@ -614,7 +440,7 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                         color: Colors.blue,
                         child: Text("Save",style: TextStyle(color: Colors.white),),
                         onPressed: (){
-                          CreateServiceSchedule();
+                          EditService();
                         }),
                   ),
 

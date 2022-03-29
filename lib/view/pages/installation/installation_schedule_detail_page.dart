@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:fiber_oms_flutter/model/one_ticket_check_model.dart';
+import 'package:fiber_oms_flutter/model/one_installation_schedule_model.dart';
+import 'package:fiber_oms_flutter/model/one_virtual_survey_model.dart';
 import 'package:fiber_oms_flutter/model/team_model.dart';
 import 'package:fiber_oms_flutter/utils/dialogue.dart';
 import 'package:fiber_oms_flutter/utils/rest_api.dart';
@@ -8,46 +9,46 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
-class NewSericeScheduleAddPage extends StatefulWidget {
+class InstallationScheduleDetailPage extends StatefulWidget {
   String id;
-  NewSericeScheduleAddPage(this.id);
+  InstallationScheduleDetailPage(this.id);
 
   @override
-  _NewSericeScheduleAddPageState createState() => _NewSericeScheduleAddPageState();
+  _InstallationScheduleDetailPageState createState() => _InstallationScheduleDetailPageState();
 }
 
-class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
+class _InstallationScheduleDetailPageState extends State<InstallationScheduleDetailPage> {
 
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
-  late OneTicketCheckModel oneTicketCheckModel ;
+  late OneVirtualSurveyModel oneInstallationSchdeuleModel ;
   bool dataReturnStatus = false;
 
-  String _startDate = "Not set";
-  String _endDate = "Not set";
-  TextEditingController _txtRemarkController = TextEditingController();
-
-  List<TeamModel> teamtListModel = [];
+  List<TeamModel> teamListModel = [];
   String _selectedTeamID = '';
   List<String> _teamIDArrayList = [];
 
-  getOneServiceSchedule()async{
+  TextEditingController _txtRemarkController = TextEditingController();
+
+  String _startDate = "Not set";
+  String _endDate = "Not set";
+
+  getOneInstallationSchdeule()async{
     //Dialogs.showLoadingDialog(context, _keyLoader);//invoking login
     print("id is "+widget.id);
     try{
-      await APIServices.Get_One_Service_Schedule(widget.id).then((value){
+      await APIServices.Get_One_Installation_Schdeule(widget.id).then((value){
 
 
         //Navigator.of(context,rootNavigator: true).pop();//close the dialoge
 
         Map<String, dynamic> dataResponse = jsonDecode(value);
 
-        print("getOneServiceSchedule data is "+dataResponse.toString());
+        print("getOneInstallationSchdeule data is "+dataResponse.toString());
         setState(() {
-          print("Ok here");
           dataReturnStatus = true;
-          oneTicketCheckModel = OneTicketCheckModel.fromJson(dataResponse['data']);
-          print("hello "+oneTicketCheckModel.toString());
+          oneInstallationSchdeuleModel = OneVirtualSurveyModel.fromJson(json.decode(value)['data']);
+          print("hello "+oneInstallationSchdeuleModel.toString());
         });
 
       });
@@ -67,28 +68,28 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
 
         Map<String, dynamic> dataResponse = jsonDecode(value);
 
-        print("Get_Teams data is "+dataResponse.toString());
+        print("getTeam data is "+dataResponse.toString());
 
         List<dynamic> dataList =  dataResponse['data'];
 
-        print("Get_Teams of aung is "+dataList.toString());
+        print("getTeam of aung is "+dataList.toString());
 
         print("Hi data "+dataList.length.toString());
         setState(() {
           for(int i=0; i<dataList.length; i++){
             try{
-              teamtListModel.add(TeamModel.fromJson(dataList[i]));
+              teamListModel.add(TeamModel.fromJson(dataList[i]));
               print("hello "+i.toString());
-              print(teamtListModel);
+              print(teamListModel);
             }
             catch(exp){
               print("intername exp");
             }
           }
 
-          if(teamtListModel.length > 0){
+          if(teamListModel.length > 0){
             setState(() {
-              teamtListModel.forEach((value){
+              teamListModel.forEach((value){
                 print("value.teamCode is "+value.id);
                 _teamIDArrayList.add(value.id);
               });
@@ -97,11 +98,11 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
           }
         });
 
-        print("teamtListModel is "+teamtListModel.toString());
+        print("teamListModel is "+teamListModel.toString());
 
-        return teamtListModel;
+        return teamListModel;
       });
-      return teamtListModel ;
+      return teamListModel ;
     }
     catch (Exc) {
       print(Exc);
@@ -145,22 +146,22 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
         }, currentTime: DateTime.now(), locale: LocaleType.en);
   }
 
-  CreateServiceSchedule()async{
+  CreateInstallationSchedule()async{
 
     Dialogs.showLoadingDialog(context, _keyLoader);//invoking login
 
     Map mydata ={
-      'ticketcheck_id': widget.id,
+      'virtualsurvey_id': widget.id,
+      'remark': _txtRemarkController.text,
       'team_id': _selectedTeamID,
       'start_date': _startDate,
-      'end_date': _endDate,
-      'remark': _txtRemarkController.text
+      'end_date': _endDate
     };
 
     print(mydata);
 
     try{
-      await APIServices.Create_Service_Schedule(mydata).then((response){
+      await APIServices.Create_Installation_Schedule(mydata).then((response){
         Navigator.of(context,rootNavigator: true).pop();//close the dialoge
         Map<String, dynamic> dataResponse = jsonDecode(response);
         //List<dynamic> dataList =  dataResponse['data'];
@@ -246,20 +247,19 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getOneServiceSchedule();
+    getOneInstallationSchdeule();
     getTeam();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey,
-        title: Text("New Service Schedule"),
+        title: Text("Installation Schedulel Detail"),
       ),
       body: dataReturnStatus == false ? Center(
         child: CircularProgressIndicator(),
-      ):ListView(
+      ): ListView(
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -278,29 +278,13 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
-                      child: Text("Ticket Detail"),
+                      child: Text("Order Detail"),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Table(
                       children: [
-                        TableRow(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Order Code"),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(oneTicketCheckModel.ticket.order.code),
-                                ],
-                              )
-                            ]
-                        ),
                         TableRow(
                             children: [
                               Column(
@@ -312,7 +296,7 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text(oneTicketCheckModel.ticket.order.package.packagetype.name),
+                                  Text(oneInstallationSchdeuleModel.order.package.packagetype.name),
                                 ],
                               )
                             ]
@@ -322,13 +306,45 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Issue"),
+                                  Text("Package"),
                                 ],
                               ),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text(oneTicketCheckModel.ticket.issue.name),
+                                  Text(oneInstallationSchdeuleModel.order.package.name),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Payment"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.payment.name),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Plan"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.planId),
                                 ],
                               )
                             ]
@@ -344,7 +360,7 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text(oneTicketCheckModel.ticket.remark),
+                                  Text(oneInstallationSchdeuleModel.order.remark),
                                 ],
                               )
                             ]
@@ -358,6 +374,7 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
 
             ),
           ),
+
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
@@ -375,7 +392,7 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
-                      child: Text("Ticket Check Detail"),
+                      child: Text("Address"),
                     ),
                   ),
                   Padding(
@@ -387,13 +404,13 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Order Code"),
+                                  Text("State/Division"),
                                 ],
                               ),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text(oneTicketCheckModel.ticket.order.code),
+                                  Text(oneInstallationSchdeuleModel.order.customer.address.state.name),
                                 ],
                               )
                             ]
@@ -403,13 +420,13 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Checking Result"),
+                                  Text("Township/Town"),
                                 ],
                               ),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text(oneTicketCheckModel.checkresult.name),
+                                  Text(oneInstallationSchdeuleModel.order.customer.address.town.name),
                                 ],
                               )
                             ]
@@ -419,13 +436,109 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Remark"),
+                                  Text("Ward"),
                                 ],
                               ),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text(oneTicketCheckModel.remark),
+                                  Text(oneInstallationSchdeuleModel.order.customer.address.ward),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Street"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.customer.address.street),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Home"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.customer.address.home),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Floor"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.customer.address.floor),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Room"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.customer.address.room),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Lat"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.customer.address.lat),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Lng"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.customer.address.lng),
                                 ],
                               )
                             ]
@@ -456,7 +569,218 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
-                      child: Text("Service Schedule Detail"),
+                      child: Text("Customer Detail"),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Table(
+                      children: [
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Name"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.customer.name),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("NRC"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.customer.nrc),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Email"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.customer.email),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Contact"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.customer.phones[0].phone.toString()),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Alternative Contact"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.customer.phones[1].phone.toString()),
+                                ],
+                              )
+                            ]
+                        ),
+
+                      ],
+                    ),
+                  )
+                ],
+              ),
+
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  //color: Colors.blueAccent
+                ),
+                borderRadius: BorderRadius.all(
+                    Radius.circular(5.0)), // Set rounded corner radius
+              ),
+              child: ListView(
+                shrinkWrap: true,
+                physics: ScrollPhysics(),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Text("Survey Detail"),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Table(
+                      children: [
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Order code"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.order.code),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Survey Status"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.condition.name),
+                                ],
+                              )
+                            ]
+                        ),
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Port"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.port.name),
+                                ],
+                              )
+                            ]
+                        ),
+
+                        TableRow(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Remark"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(oneInstallationSchdeuleModel.remark),
+                                ],
+                              )
+                            ]
+                        ),
+
+                      ],
+                    ),
+                  )
+                ],
+              ),
+
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  //color: Colors.blueAccent
+                ),
+                borderRadius: BorderRadius.all(
+                    Radius.circular(5.0)), // Set rounded corner radius
+              ),
+              child: ListView(
+                shrinkWrap: true,
+                physics: ScrollPhysics(),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Text("Installation Schedule Detail"),
                     ),
                   ),
                   Padding(
@@ -480,7 +804,7 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             isExpanded: true,
-                            items: teamtListModel.map((value) {
+                            items: teamListModel.map((value) {
                               return DropdownMenuItem<String>(
                                 value: value.id.toString(),
                                 child: Text(value.name),
@@ -494,6 +818,11 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                       ),
                     ),
                   ),
+
+                  SizedBox(
+                    height: 20,
+                  ),
+
                   RaisedButton(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5.0)),
@@ -597,30 +926,30 @@ class _NewSericeScheduleAddPageState extends State<NewSericeScheduleAddPage> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      controller: _txtRemarkController,
+                        controller: _txtRemarkController,
                         decoration: InputDecoration(
                           labelText: "Remark",
                           border: OutlineInputBorder(),
                         )
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: MaterialButton(
-                        height: 58,
-                        minWidth: 340,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: new BorderRadius.circular(12)),
-                        color: Colors.blue,
-                        child: Text("Save",style: TextStyle(color: Colors.white),),
-                        onPressed: (){
-                          CreateServiceSchedule();
-                        }),
-                  ),
-
                 ],
               ),
             ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: MaterialButton(
+                height: 58,
+                minWidth: 340,
+                shape: RoundedRectangleBorder(
+                    borderRadius: new BorderRadius.circular(12)),
+                color: Color(0xFFF7CA18),
+                child: Text("Save"),
+                onPressed: (){
+                  CreateInstallationSchedule();
+                }),
           ),
         ],
       ),
