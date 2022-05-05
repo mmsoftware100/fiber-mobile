@@ -9,8 +9,8 @@ import 'package:http_parser/http_parser.dart';
 
   // const String domain = "http://192.168.1.104:8080/FOPM/public/api/v1/";
   // const String domain = "http://192.168.1.103:8080/FOPM/public/api/v1/";
-  const String domain = "http://192.168.137.196:8080/FOPM/public/api/v1/";
-  // const String domain = "http://103.154.241.143/fiber/public/api/v1/";
+  // const String domain = "http://192.168.137.196:8080/FOPM/public/api/v1/";
+  const String domain = "http://103.154.241.143/fiber/public/api/v1/";
 
  //const String domain = "http://192.168.137.107:8080/FOPM/public/api/v1/";
 
